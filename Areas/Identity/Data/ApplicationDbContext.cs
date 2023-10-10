@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using EmployeePortal.Areas.Identity.Data.Employee;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +10,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
-    }
+    }   
+
+    public DbSet<EmployeeEntity> Employees => Set<EmployeeEntity>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -19,14 +22,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // Add your customizations after calling base.OnModelCreating(builder);
 
         builder.ApplyConfiguration(new ApplicationUserEntityConfiguration());
+        builder.ApplyConfiguration(new EmployeeEntityConfiguration());
     }
 }
 
-public class ApplicationUserEntityConfiguration : IEntityTypeConfiguration<ApplicationUser>
+public abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguration<TEntity> where TEntity : class
 {
-    public void Configure(EntityTypeBuilder<ApplicationUser> builder)
+    public virtual void Configure(EntityTypeBuilder<TEntity> builder)
     {
-        builder.Property(u => u.FirstName).HasMaxLength(255);
-        builder.Property(u => u.LastName).HasMaxLength(255);
+        // Common property configurations that apply to all entities go here
     }
 }
