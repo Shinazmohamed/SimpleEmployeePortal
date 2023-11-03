@@ -12,4 +12,5 @@
         public string M1 { get; set; }
         public string M2 { get; set; }
     }
+
 }
