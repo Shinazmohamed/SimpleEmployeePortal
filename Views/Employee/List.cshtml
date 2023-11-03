@@ -48,33 +48,53 @@
 
 
     <script type="text/javascript">
-        $(document).ready(function () {
-            var table = $('#employeeTable').DataTable({
-                // DataTables configuration options go here
-            });
+            $(document).ready(function () {
+                var table = $('#employeeTable').DataTable({
+                    // DataTables configuration options go here
+                    processing: true, // Note the correct spelling
+                    serverSide: true,
+                    searching: false, // Hide the search input field
+                    ordering: false,  // Hide the sorting arrows and column headers
+                    ajax: {
+                        url: '/employee/GetList', // Replace with your API endpoint
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: function (d) {
+                            console.log(d);
+                            var customFilter = {
+                                draw: d.draw,
+                                start: d.start,
+                                length: d.length
+                                // Add other filter properties if needed
+                            };
+                            return JSON.stringify(customFilter);
+                        },
+                        dataSrc: 'data' // This indicates where the data array is in the response
+                    },
+                    columns: [
+                        { data: 'locationName' },
+                        { data: 'departmentName' },
+                        { data: 'categoryName' },
+                        { data: 'subCategoryName' },
+                        { data: 'e1' },
+                        { data: 'e2' },
+                        { data: 'm1' },
+                        { data: 'm2' },
+                        {
+                            data: 'id',
+                            render: function (data, type, row) {
+                                return '<button class="btn btn-primary btn-edit" data-id="' + data + '">Edit</button>';
+                            }
+                        },
+                        {
+                            data: 'id',
+                            render: function (data, type, row) {
+                                return '<button class="btn btn-danger btn-delete" data-id="' + data + '">Delete</button>';
+                            }
+                        }
+                    ]
+                });
 
-            // Use AJAX to fetch data and populate the table dynamically
-            $.ajax({
-                url: '/employee/GetList', // Replace with your API endpoint
-                method: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    $.each(data, function (index, item) {
-                        table.row.add([
-                            item.locationName,
-                            item.departmentName,
-                            item.categoryName,
-                            item.subCategoryName,
-                            item.e1,
-                            item.e2,
-                            item.m1,
-                            item.m2,
-                            '<button class="btn btn-primary btn-edit" data-id="' + item.id + '">Edit</button>',
-                            '<button class="btn btn-danger btn-delete" data-id="' + item.id + '">Delete</button>'
-                        ]).draw(false);
-                    });
-                }
-            });
 
             // Handle Edit button click
             $('#employeeTable').on('click', '.btn-edit', function () {
@@ -89,26 +109,6 @@
                 // Show a confirmation modal here and handle delete accordingly
                 // You can use Bootstrap's modal for this purpose
             });
-
-            // Add this script to your JavaScript file
-            //$('#employeeTable').on('click', '.btn-delete', function () {
-            //    var id = $(this).data('id');
-            //    $('#deleteConfirmationModal').modal('show');
-
-            //    $('#confirmDelete').on('click', function () {
-            //        // Handle the delete operation here, e.g., via AJAX
-            //        $.ajax({
-            //            url: '/employee/Delete?id=' + id, // Replace with your API endpoint
-            //            method: 'DELETE',
-            //            success: function () {
-            //                // Remove the row from the DataTable after successful deletion
-            //                table.row($(this).closest('tr')).remove().draw(false);
-            //            }
-            //        });
-
-            //        $('#deleteConfirmationModal').modal('hide');
-            //    });
-            //});
 
             $('#employeeTable').on('click', '.btn-delete', function () {
                 var id = $(this).data('id');

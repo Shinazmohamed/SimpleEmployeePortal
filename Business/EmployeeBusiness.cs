@@ -1,5 +1,6 @@
 ﻿using EmployeePortal.Areas.Identity.Data.Employee;
 using EmployeePortal.Interface;
+using EmployeePortal.Models;
 using EmployeePortal.Service;
 
 namespace EmployeePortal.Business
@@ -22,11 +23,11 @@ namespace EmployeePortal.Business
 				throw;
 			}
         }
-        public async Task<IEnumerable<EmployeeEntity>> GetAll()
+        public async Task<PaginationResponse<EmployeeEntity>> GetAll(PaginationFilter filter)
         {
             try
             {
-                return await _service.GetAll();
+                return await _service.GetAll(filter);
             }
             catch (Exception)
             {

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EmployeePortal.Areas.Identity.Data.Employee;
 using EmployeePortal.Interface;
+using EmployeePortal.Models;
 using EmployeePortal.Models.Employee;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,27 +26,25 @@ namespace EmployeePortal.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult Create(InsertEmployeeModel employee)
+        public IActionResult Create(InsertEmployeeRequest employee)
         {
             return View(employee);
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreateEmployee(InsertEmployeeModel model)
+        public async Task<IActionResult> CreateEmployee(InsertEmployeeRequest model)
         {
-            if (ModelState.IsValid)
+            var _entity = _mapper.Map<EmployeeEntity>(model);
+            var createEmp = await _business.Create(_entity);
+            if (createEmp)
             {
-                var _entity = _mapper.Map<EmployeeEntity>(model);
-                var createEmp = await _business.Create(_entity);
-                if (createEmp)
-                {
-                    TempData["SuccessMessage"] = "Employee created successfully.";
-                    return RedirectToAction("Create");
-                }
+                TempData["SuccessMessage"] = "Employee created successfully.";
+                return RedirectToAction("Create");
             }
+            
             TempData["ErrorMessage"] = "Employee creation failed.";
-            return View(model); 
+            return View("Create", model);
         }
 
         [HttpGet]
@@ -54,24 +53,32 @@ namespace EmployeePortal.Controllers
             return View();
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ViewEmployeeModel>>> GetList()
+        [HttpPost]
+        public async Task<IActionResult> GetList([FromBody] PaginationFilter filter)
         {
+            var response = await _business.GetAll(filter);
 
-            var listEmp = await _business.GetAll();
-            return Ok(listEmp.Select(e => _mapper.Map<ViewEmployeeModel>(e)));
+            // Return the data in the format expected by DataTables
+            return Json(new
+            {
+                draw = filter.draw,
+                recordsTotal = response.TotalCount,
+                recordsFiltered = response.TotalCount, // Use the total count as recordsFiltered
+                data = response.Data.Select(e => _mapper.Map<ViewEmployeeModel>(e))
+            });
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
-            var _entity = _mapper.Map<InsertEmployeeModel>(await _business.GetById(id));
+            var _entity = _mapper.Map<InsertEmployeeRequest>(await _business.GetById(id));
             return RedirectToAction("Create", _entity);
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Edit(InsertEmployeeModel model)
+        public async Task<IActionResult> Edit(InsertEmployeeRequest model)
         {
             if (ModelState.IsValid)
             {

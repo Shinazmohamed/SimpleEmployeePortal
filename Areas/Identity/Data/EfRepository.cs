@@ -1,4 +1,5 @@
 ﻿using EmployeePortal.Interface;
+using EmployeePortal.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -169,21 +170,21 @@ namespace EmployeePortal.Areas.Identity.Data
                 throw new Exception(GetFullErrorTextAndRollbackEntityChanges(ex), ex.InnerException);
             }
         }
-
-        public async Task<IEnumerable<TEntity>> GetAll()
+        
+        public async Task<PaginationResponse<TEntity>> GetEntitiesWithFilters(PaginationFilter filter)
         {
             try
             {
-                var page = 10;
-                var pageResults = 3f;
-                var pageCount = Math.Ceiling(Entities.Count() / pageResults);
+                var totalCount = Entities.Count();
+                var filteredEntities = Entities.Skip(filter.start).Take(filter.length).ToList();
 
-                var products = await Entities
-                    .Skip((page - 1) * (int)pageResults)
-                    .Take((int)pageResults)
-                    .ToListAsync();
+                return new PaginationResponse<TEntity>(
+                    filteredEntities,
+                    totalCount,
+                    filter.draw,
+                    filter.length
+                );
 
-                return await Entities.Take(10).ToListAsync();
 
             }
             catch (DbUpdateException ex)
@@ -191,6 +192,64 @@ namespace EmployeePortal.Areas.Identity.Data
                 throw new Exception(GetFullErrorTextAndRollbackEntityChanges(ex), ex.InnerException);
             }
         }
+
+        public async Task<PaginationResponse<TEntity>> GetAll(PaginationFilter filter)
+        {
+            IQueryable<TEntity> query = Entities;
+
+            //// Apply filtering based on the search value
+            //if (!string.IsNullOrEmpty(filter.search.value))
+            //{
+            //    var searchValue = filter.search.value.ToLower(); // Convert to lowercase for case-insensitive search
+            //    query = query.Where(e => EntityContainsValue(e, searchValue));
+            //}
+
+            //// Apply ordering based on the order properties
+            //if (filter.order != null && filter.order.Any())
+            //{
+            //    var order = filter.order[0]; // Assuming you're handling only one column ordering
+            //    int columnIndex = order.column;
+
+            //    // Dynamically get the property name to order by based on columnIndex
+            //    var columnProperty = typeof(TEntity).GetProperties()[columnIndex];
+            //    string propertyName = columnProperty.Name;
+
+            //    if (order.dir == "asc")
+            //    {
+            //        query = query.OrderBy(e => columnProperty.GetValue(e));
+            //    }
+            //    else
+            //    {
+            //        query = query.OrderByDescending(e => columnProperty.GetValue(e));
+            //    }
+            //}
+
+            // Perform the count and pagination
+            var totalCount = query.Count();
+            var filteredEntities = query.Skip(filter.start).Take(filter.length).ToList();
+
+            return new PaginationResponse<TEntity>(
+                filteredEntities,
+                totalCount,
+                filter.draw,
+                filter.length
+            );
+        }
+
+        private bool EntityContainsValue(TEntity entity, string searchValue)
+        {
+            foreach (var property in typeof(TEntity).GetProperties())
+            {
+                var propertyValue = property.GetValue(entity);
+                if (propertyValue != null && propertyValue.ToString().ToLower().Contains(searchValue))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
 
         public IEnumerable<TEntity> GetMany(Expression<Func<TEntity, bool>> where)
         {

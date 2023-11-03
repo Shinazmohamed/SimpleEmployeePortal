@@ -1,5 +1,6 @@
 ﻿using EmployeePortal.Areas.Identity.Data.Employee;
 using EmployeePortal.Interface;
+using EmployeePortal.Models;
 
 namespace EmployeePortal.Service
 {
@@ -20,9 +21,9 @@ namespace EmployeePortal.Service
             return result > 0;
         }
 
-        public async Task<IEnumerable<EmployeeEntity>> GetAll()
+        public async Task<PaginationResponse<EmployeeEntity>> GetAll(PaginationFilter filter)
         {
-            return await _unitOfWork.EmployeeRepo.GetAll();
+            return await _unitOfWork.EmployeeRepo.GetAll(filter);
         }
 
         public async Task<EmployeeEntity?> GetById(string id)

@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using EmployeePortal.Models;
+using System.Linq.Expressions;
 
 namespace EmployeePortal.Interface
 {
@@ -12,7 +13,7 @@ namespace EmployeePortal.Interface
         Task<T> Get(object id);
         Task<T> Get(Expression<Func<T, bool>> where);
         IEnumerable<T> GetMany(Expression<Func<T, bool>> where);
-        Task<IEnumerable<T>> GetAll();
+        Task<PaginationResponse<T>> GetAll(PaginationFilter filter);
         Task<int> Count(Expression<Func<T, bool>> where);
         Task<int> Count();
 

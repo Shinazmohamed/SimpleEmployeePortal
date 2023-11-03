@@ -8,8 +8,8 @@ namespace EmployeePortal.Mapping
     {
         public Profiles()
         {
-            CreateMap<EmployeeEntity, InsertEmployeeModel>();
-            CreateMap<InsertEmployeeModel, EmployeeEntity>();
+            CreateMap<EmployeeEntity, InsertEmployeeRequest>();
+            CreateMap<InsertEmployeeRequest, EmployeeEntity>();
             CreateMap<EmployeeEntity, ViewEmployeeModel>()
                 .ForMember(e =>
                     e.Id, e => e.MapFrom(src => src.Id));
