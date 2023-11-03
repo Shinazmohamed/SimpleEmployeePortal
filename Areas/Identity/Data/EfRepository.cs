@@ -174,7 +174,17 @@ namespace EmployeePortal.Areas.Identity.Data
         {
             try
             {
-                return await Entities.ToListAsync();
+                var page = 10;
+                var pageResults = 3f;
+                var pageCount = Math.Ceiling(Entities.Count() / pageResults);
+
+                return await await Entities
+                    .Skip((page - 1) * (int)pageResults)
+                    .Take((int)pageResults)
+                    .ToListAsync();
+
+                return await Entities.Take(10).ToListAsync();
+
             }
             catch (DbUpdateException ex)
             {
