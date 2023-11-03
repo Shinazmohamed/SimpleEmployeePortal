@@ -178,7 +178,7 @@ namespace EmployeePortal.Areas.Identity.Data
                 var pageResults = 3f;
                 var pageCount = Math.Ceiling(Entities.Count() / pageResults);
 
-                return await await Entities
+                var products = await Entities
                     .Skip((page - 1) * (int)pageResults)
                     .Take((int)pageResults)
                     .ToListAsync();
